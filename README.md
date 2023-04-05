@@ -1,9 +1,11 @@
-Open links, pages or bookmarks into the sidebar. 
+Open links, pages, tabs or bookmarks into the sidebar.
 
 <b>Usage/Feature</b>
 <ul>
-	<li>Open links, pages or bookmarks in the browser sidebar</li>
-	<li>Spoof Useragent so the page/server knows about the reduced screen size</li>
+  <li>Open links, pages, tabs or bookmarks in the browser sidebar</li>
+  <li>
+    Spoof User-Agent header so the page/server knows about the reduced screen size
+  </li>
 </ul>
 
 <b>Notes:</b>

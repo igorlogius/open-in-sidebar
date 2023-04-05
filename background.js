@@ -1,74 +1,63 @@
 /* global browser */
 
-const FIREFOX_VERSION = /rv:([0-9.]+)/.exec(navigator.userAgent)[1];
-const MOBILE_USER_AGENT = `Mozilla/5.0 (Android 12; Mobile; rv:${FIREFOX_VERSION}) Gecko/${FIREFOX_VERSION} Firefox/${FIREFOX_VERSION}`;
+const FXVER = /rv:([0-9.]+)/.exec(navigator.userAgent)[1];
+const MOBUA = `Mozilla/5.0 (Android 12; Mobile; rv:${FXVER}) Gecko/${FXVER} Firefox/${FXVER}`;
 
-function openUrl(url) {
+function setUrl(url) {
+  browser.sidebarAction.setPanel({ panel: "about:blank" });
   setTimeout(() => {
     browser.sidebarAction.setPanel({ panel: url });
   }, 1000);
 }
 
-function sendMobileUserAgent(info) {
-  const headers = info.requestHeaders;
-  for (let i = 0; i < headers.length; i++) {
-    const name = headers[i].name.toLowerCase();
-    if (name === "user-agent") {
-      headers[i].value = MOBILE_USER_AGENT;
+function setMOBUA(info) {
+  let i, headers = info.requestHeaders;
+  const hlen = headers.length;
+
+  for (i = 0; i < hlen; i++) {
+    if (headers[i].name.toLowerCase() === "user-agent") {
+      headers[i].value = MOBUA;
       break;
     }
   }
   return { requestHeaders: headers };
 }
 
-(async () => {
-  [
-    {
-      title: "Open Link in Sidebar",
-      contexts: ["link"],
-      onclick: (info) => {
-        browser.sidebarAction.open();
-        openUrl(info.linkUrl);
-      },
-    },
-    {
-      title: "Open Page in Sidebar",
-      contexts: ["page"],
-      onclick: (info) => {
-        browser.sidebarAction.open();
-        openUrl(info.pageUrl);
-      },
-    },
-    {
-      title: "Open Tab in Sidebar",
-      contexts: ["tab"],
-      onclick: (info) => {
-        browser.sidebarAction.open();
-        openUrl(info.pageUrl);
-      },
-    },
-    {
-      title: "Open Bookmark in Sidebar",
-      contexts: ["bookmark"],
-      onclick: async (info) => {
-        browser.sidebarAction.open();
-        openUrl((await browser.bookmarks.get(info.bookmarkId))[0].url);
-      },
-    },
-  ].forEach(async (item) => {
-    console.debug(item);
-    await browser.menus.create(item);
+const elements = {
+  link: (info) => {
+    setUrl(info.linkUrl);
+  },
+  page: (info) => {
+    setUrl(info.linkUrl);
+  },
+  tab: (info) => {
+    setUrl(info.linkUrl);
+  },
+  bookmark: async (info) => {
+    setUrl((await browser.bookmarks.get(info.bookmarkId))[0].url);
+  },
+};
+
+Object.keys(elements).forEach((e) => {
+  browser.menus.create({
+    id: e,
+    title: "Open " + e[0].toUpperCase() + e.slice(1) + " in Sidebar",
+    contexts: [e],
   });
+});
 
-  const requestFilter = {
-    tabId: -1,
-    types: ["main_frame"],
-    urls: ["<all_urls>"],
-  };
+browser.menus.onClicked.addListener((info, tab) => {
+  browser.sidebarAction.open();
+  elements[info.menuItemId](info);
+});
 
-  browser.webRequest.onBeforeSendHeaders.addListener(
-    sendMobileUserAgent,
-    requestFilter,
-    ["blocking", "requestHeaders"]
-  );
-})();
+const filter = {
+  tabId: -1,
+  types: ["main_frame"],
+  urls: ["<all_urls>"],
+};
+
+browser.webRequest.onBeforeSendHeaders.addListener(setMOBUA, filter, [
+  "blocking",
+  "requestHeaders",
+]);
