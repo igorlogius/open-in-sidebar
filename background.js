@@ -33,7 +33,15 @@ function sendMobileUserAgent(info) {
     },
     {
       title: "Open Page in Sidebar",
-      contexts: ["page", "tab"],
+      contexts: ["page"],
+      onclick: (info) => {
+        browser.sidebarAction.open();
+        openUrl(info.pageUrl);
+      },
+    },
+    {
+      title: "Open Tab in Sidebar",
+      contexts: ["tab"],
       onclick: (info) => {
         browser.sidebarAction.open();
         openUrl(info.pageUrl);
