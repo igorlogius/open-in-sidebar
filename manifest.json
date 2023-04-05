@@ -1,0 +1,23 @@
+{
+  "author": "igorlogius",
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "manifest_version": 2,
+  "name": "Open in Sidebar",
+  "description": "tbd.",
+  "version": "1.0.0",
+
+  "sidebar_action": {
+    "open_at_install": false,
+    "default_panel": "panel.html"
+  },
+  "permissions": [
+    "menus",
+    "bookmarks",
+    "<all_urls>",
+    "webRequest",
+    "webRequestBlocking"
+  ],
+  "icons": {}
+}
